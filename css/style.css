@@ -1,0 +1,105 @@
+#ifForm{
+    width: 400px;
+    padding: 40px;
+    background: #303030;
+    margin: 20px 0;
+}
+#ifForm h2{
+    font-weight: bold;
+    color: white;
+    text-transform: uppercase;
+    text-align: center;
+}
+#ifForm input[type = "text"],#ifForm input[type = "email"]
+{
+    text-align: center;
+    border: 0;
+    display: block;
+    margin: 20px auto;
+    background: none;
+    border: 2px solid #fff;
+    padding: 14px 10px;
+    width: 200px;
+    outline: none;
+    color: white;
+    border-radius: 24px;
+    transition: 0.5s;
+}
+#ifForm input[type = "text"]:hover,#ifForm input[type = "email"]:hover{
+    width: 220px;
+    border-color: #F20505;
+}
+#ifForm input[type = "submit"]
+{
+    border: 0;
+    text-align: center;
+    display: block;
+    margin: 20px auto;
+    border: 2px solid #F20505;
+    padding: 14px 40px;
+    outline: none;
+    background: none;
+    color: white;
+    width: 150px;
+    border-radius: 24px;
+    cursor: pointer;
+    transition: 0.5s;
+}
+#ifForm input[type = "submit"]:hover{
+    width: 160px;
+    background: #F20505;
+}
+#ifForm2{
+    width: 450px;
+    padding: 40px;
+    background: #303030;
+    margin: 20px;
+}
+#ifForm2 h2{
+    font-weight: bold;
+    color: white;
+    text-transform: uppercase;
+    text-align: center;
+}
+#ifForm2 input[type = "text"],#ifForm2 input[type = "email"]
+{
+    text-align: center;
+    border: 0;
+    margin: 20px auto;
+    display: block;
+    background: none;
+    border: 2px solid #fff;
+    padding: 14px 10px;
+    width: 200px;
+    outline: none;
+    color: white;
+    border-radius: 24px;
+    transition: 0.5s;
+}
+#ifForm2 input[type = "text"]:hover,#ifForm2 input[type = "email"]:hover{
+    width: 220px;
+    border-color: #F20505;
+}
+#ifForm2 input[type = "submit"]
+{
+    border: 0;
+    text-align: center;
+    display: block;
+    margin: 20px auto;
+    border: 2px solid #F20505;
+    padding: 14px 40px;
+    outline: none;
+    background: none;
+    color: white;
+    width: 150px;
+    border-radius: 24px;
+    cursor: pointer;
+    transition: 0.5s;
+}
+#ifForm2 input[type = "submit"]:hover{
+    width: 160px;
+    background: #F20505;
+}
+#ifForm2 img{
+    width: 160px;
+}
