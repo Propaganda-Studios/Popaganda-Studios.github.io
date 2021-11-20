@@ -1,27 +1,28 @@
-#define cyfrowe_wejscie_gazu 5
+#define gasesInpitPin 5
 
 #include <ESP8266WiFi.h>  
 #include <OneWire.h>
 #include <DallasTemperature.h>
  
-String ssid     ="";//SSID sieci
-String password = "";//Haslo
-const int pinAnalogowy = A0; 
+String ssid     ="";//WI-FI SSID
+String password = "";//Password
+const int analogPin = A0; 
 
-float aktualizacja = 0;//kiedy ma sie zaktualizowac bpm
-float sumaCzasow=0;
-float ostatnieUderzenie = 0;
-int granica = 565;
-int uderzeniaNaPomiar=0;
+float bpmUpdateTime = 0;//kiedy ma sie zaktualizowac bpm
+float timeSum=0;
+float lastTime = 0;
+int minimum = 565;
+int  heartbeatDuringMeasurement=0;
 int bps = 0;
-///////
-bool czyRosnie=false;
-float ostatniOdczyt=0;
-int BINARKAELO=0;
 
-float temperaturaUno = 0;
-float temperaturaDos = 0;
-int gazy = 0;
+///////
+bool isRising=false;
+float lastRead=0;
+int iddqd=0;
+
+float tempUno = 0;
+float tempDos = 0;
+int gases = 0;
 
 OneWire oneWire(4);
 DallasTemperature sensors(&oneWire);
@@ -30,7 +31,7 @@ WiFiServer server(80);
  
 void setup() 
 {
-  pinMode(cyfrowe_wejscie_gazu,INPUT);
+  pinMode(gasesInpitPin,INPUT);
   
   Serial.begin(115200);
   sensors.begin();
@@ -39,7 +40,7 @@ void setup()
   delay(5000);
   while (WiFi.status() != WL_CONNECTED) 
   {
-    Serial.println("Problem z polaczeniem - mozesz podac SSID i haslo rozdzielajac je spacja");
+    Serial.println("Connection error - you can enter SSID and password separated by a space");
     delay(5000);
     if(Serial.available())
     {
@@ -52,8 +53,8 @@ void setup()
     }
   }
   server.begin();
-  Serial.println("Polaczono z siecia WI-FI");
-  Serial.println("IP urzadzenia: ");
+  Serial.println("Connect");
+  Serial.println("My IP: ");
   Serial.println(WiFi.localIP());   
 }
 
@@ -76,7 +77,7 @@ void serwerStuff()
       return;
     }
   }
-  String zapytanie = client.readStringUntil('\r');
+  String query = client.readStringUntil('\r');
   client.flush();
 
   client.println("HTTP/1.1 200 OK");
@@ -84,29 +85,29 @@ void serwerStuff()
   client.println("");
 
   
-  if (zapytanie.indexOf("/ID=1") != -1)  
+  if (query.indexOf("/ID=1") != -1)  
   {
-    client.println(temperaturaUno);
+    client.println(tempUno);
   }
-  else if (zapytanie.indexOf("/ID=2") != -1)  
+  else if (query.indexOf("/ID=2") != -1)  
   {
-    client.println(temperaturaDos);
+    client.println(tempDos);
   }
-  else if (zapytanie.indexOf("/ID=3") != -1)  
+  else if (query.indexOf("/ID=3") != -1)  
   {
-    client.println(gazy);
+    client.println(gases);
   }
-  else if (zapytanie.indexOf("/ID=4") != -1)  
+  else if (query.indexOf("/ID=4") != -1)  
   {
     client.println(bps);
   }  
-  else if (zapytanie.indexOf("/BPS=UP") != -1)  
+  else if (query.indexOf("/BPS=UP") != -1)  
   {
-    granica+=5;
+    minimum+=5;
   }
-  else if (zapytanie.indexOf("/BPS=DOWN") != -1)  
+  else if (query.indexOf("/BPS=DOWN") != -1)  
   {
-    granica-=5;
+    minimum-=5;
   }
   else
   {
@@ -119,17 +120,17 @@ void serwerStuff()
     client.println("<body>");
     client.println("<h1>KES web server</h1>");
     ////
-    client.println("<b>Temperatura #1:</b>");
-    client.println("<p id=\"tempUno\">"+String(temperaturaUno)+"</p><br />");
+    client.println("<b>Temp #1:</b>");
+    client.println("<p id=\"tempUno\">"+String(tempUno)+"</p><br />");
     
-    client.println("<b>Temperatura #2:</b>");
-    client.println("<p id=\"tempUno\">"+String(temperaturaDos)+"</p><br />");
+    client.println("<b>Temp #2:</b>");
+    client.println("<p id=\"tempUno\">"+String(tempDos)+"</p><br />");
     
-    client.println("<b>Gazy:</b>");
-    client.println("<p id=\"gaz\">"+String(gazy)+"</p><br />");
+    client.println("<b>Gases:</b>");
+    client.println("<p id=\"gaz\">"+String(gases)+"</p><br />");
   
-    client.println("<b>Tetno:</b>");
-    client.println("<p id=\"gaz\">"+String(bps)+" Przy bramce szumów wynoszącej:"+String(granica)+"</p><br />");
+    client.println("<b>Pulse:</b>");
+    client.println("<p id=\"gaz\">"+String(bps)+" Przy bramce szumów wynoszącej:"+String(minimum)+"</p><br />");
     ////
     client.println("</body>");
     client.println("</html>");
@@ -139,43 +140,43 @@ void serwerStuff()
 
 void loop() 
 {
-  float curOdczyt = analogRead(pinAnalogowy);
+  float dataFromPin = analogRead(analogPin);
   
-  if(curOdczyt>ostatniOdczyt)
+  if(dataFromPin>lastRead)
   {
-    czyRosnie=true;
+    isRising=true;
   }
   else
   {
-    if(czyRosnie==true)
+    if(isRising==true)
     {
-      sumaCzasow+=(millis()-ostatnieUderzenie);
-      uderzeniaNaPomiar++;
-      ostatnieUderzenie = millis();
-      BINARKAELO=700;
+      timeSum+=(millis()-lastTime);
+       heartbeatDuringMeasurement++;
+      lastTime = millis();
+      iddqd=700;
     }
-    czyRosnie=false;
+    isRising=false;
   }
-  Serial.print(BINARKAELO);
+  Serial.print(iddqd);
   Serial.print(",");
-  Serial.println(curOdczyt);
-  BINARKAELO=0;
-  ostatniOdczyt=curOdczyt;
+  Serial.println(dataFromPin);
+  iddqd=0;
+  lastRead=dataFromPin;
   
-  if(millis()>aktualizacja)
+  if(millis()>bpmUpdateTime)
   {
-    bps=int(60000/(sumaCzasow/uderzeniaNaPomiar));
-    aktualizacja = millis()+10000;
-    sumaCzasow=0;
-    uderzeniaNaPomiar=0;
+    bps=int(60000/(timeSum/ heartbeatDuringMeasurement));
+    bpmUpdateTime = millis()+10000;
+    timeSum=0;
+     heartbeatDuringMeasurement=0;
   }
   
 
   ////
   sensors.requestTemperatures(); //Pobranie temperatury czujnika
-  temperaturaUno = sensors.getTempCByIndex(0);
-  temperaturaDos = sensors.getTempCByIndex(1);
-  gazy = digitalRead(cyfrowe_wejscie_gazu);
+  tempUno = sensors.getTempCByIndex(0);
+  tempDos = sensors.getTempCByIndex(1);
+  gases = digitalRead(gasesInpitPin);
   ////
   
   serwerStuff();
